@@ -44,7 +44,7 @@ public class LoginActivity extends Activity implements LoginListener {
 	private BasicIPMessagingClient chatClient;
 	private String endpoint_id = "";
 	public static String local_author = DEFAULT_CLIENT_NAME;
-    private String PROJECT_NUMBER = "1015096783942";
+    private String PROJECT_NUMBER = "1234567891234";
     private EditText etRegId;
 	
 	@Override
