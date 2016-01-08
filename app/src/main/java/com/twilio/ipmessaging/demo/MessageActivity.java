@@ -1,5 +1,7 @@
 package com.twilio.ipmessaging.demo;
 
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -42,9 +44,16 @@ import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import javax.crypto.BadPaddingException;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.NoSuchPaddingException;
+
 import uk.co.ribot.easyadapter.EasyAdapter;
 
 public class MessageActivity extends Activity implements ChannelListener{
+
+	private RSAUtil  rsaUtil = new RSAUtil();
 
 	private static final String[] MESSAGE_OPTIONS = { "Remove", "Edit" };
 	private static final Logger logger = Logger.getLogger(MessageActivity.class);
@@ -55,7 +64,10 @@ public class MessageActivity extends Activity implements ChannelListener{
 	private List<Member> members =  new ArrayList<Member>();
 	private Channel channel;
 	private static final String[] EDIT_OPTIONS = {"Change Friendly Name", "Change Topic", "List Members", "Invite Member", "Add Member", "Remove Member", "Leave", "Change ChannelType", "destroy", "get attribute", "Change Unique Name", "Get Unique Name"};
-	
+
+	private static final String RSA_PUBLIC_KEY1 = "MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDosvH1gCpQTTZLXGMcSeeqDjWuDVY0+Aab1VbtGJqWdkPd32D4hEUwFjVJ+FJbq7UpvFFDQ3k2y2n/1rzxWapFk/e+BNNCSKP9e6+Of1SLs83So27dgiAeAKmdQoxwfXrgvP1/QRMJJ0i6m3CRRyTlXO+cMGbYqRv1iTT9uaRolQIDAQAB";
+	private static final String RSA_PRIVATE_KEY1 = "MIICeAIBADANBgkqhkiG9w0BAQEFAASCAmIwggJeAgEAAoGBAOiy8fWAKlBNNktcYxxJ56oONa4NVjT4BpvVVu0YmpZ2Q93fYPiERTAWNUn4UlurtSm8UUNDeTbLaf/WvPFZqkWT974E00JIo/17r45/VIuzzdKjbt2CIB4AqZ1CjHB9euC8/X9BEwknSLqbcJFHJOVc75wwZtipG/WJNP25pGiVAgMBAAECgYEAv4PXY8hyCtkhYHDPGU8yHWHIiFFtq/ad6c9x1X00bbU0Mf1Q3/hswSDmBtUbY1s0pP7amtODhbdwrCFeK/0yBrOegb2fQeJs/QL6/y4/DPzRB21k9N8cQjgmv5tQb72fwdY8nDROXnzKQceMo6b/xkWaIhvhdUq6nCqPvoIGRIECQQD+lOKTQk769G9BQd7HW+2H2NioPbxri+V27daC1M5uBfBj8Wt3NDJ5IyMvOHz5yTlm8FsE2Zz1/aFdLJ/Rv4IRAkEA6f7ZOMcuxlRsAiN708+r3q3sxAyBood+qAJ1MKhOrdR94RcAPUkcjFTZ8j1v0eclj6+w2RChcpb5Ath93ia6RQJBAP3b6x+axHUcn4A8NfEn6vFGu6zwet3nT3bLbddia0JtK6wNhfMFGruO3TvuITlXfaT3UlvAv/LP6kOmBuw6AnECQQDR3r29awjM4ZMuJ908EJs6Ugx1mjH7MEOtNOcfCRXoWxm79QFF9nkgdEo2NlxAi2zo/s9DIONs/3O/1aSux1VxAkBkkOdc0f2ogWZHqtCYfVfYjwbMvlW/6lnbq0B76V1SVqogoSubwnF7EUBdmqpzWmzqM4xURBh9QqDnUUfBzPMW";
+
 	private static final int NAME_CHANGE = 0;
 	private static final int TOPIC_CHANGE = 1;
 	private static final int LIST_MEMBERS = 2;
@@ -374,10 +386,10 @@ public class MessageActivity extends Activity implements ChannelListener{
 	    	      		});	     	
 					}
 				}).setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-					public void onClick(DialogInterface dialog, int id) {
-						dialog.cancel();
-					}
-				});
+			public void onClick(DialogInterface dialog, int id) {
+				dialog.cancel();
+			}
+		});
 		editTextDialog = builder.create();
 		editTextDialog.show();
 	}
@@ -484,7 +496,7 @@ public class MessageActivity extends Activity implements ChannelListener{
 		// send
 		// button
 		EditText inputText = (EditText) findViewById(R.id.messageInput);
-		inputText.addTextChangedListener(new TextWatcher(){
+		inputText.addTextChangedListener(new TextWatcher() {
 
 			@Override
 			public void beforeTextChanged(CharSequence s, int start, int count, int after) {
@@ -496,11 +508,11 @@ public class MessageActivity extends Activity implements ChannelListener{
 
 			@Override
 			public void afterTextChanged(Editable s) {
-				if(channel != null ) {
+				if (channel != null) {
 					channel.typing();
 				}
 			}
-		   
+
 		}); 
 		inputText.setOnEditorActionListener(new TextView.OnEditorActionListener() {
 			@Override
@@ -543,6 +555,9 @@ public class MessageActivity extends Activity implements ChannelListener{
 				messages = new ArrayList<Message>(Arrays.asList(messagesArray));
 				Collections.sort(messages, new CustomMessageComparator());
 			}
+
+
+
 			adapter = new EasyAdapter<Message>(this, MessageViewHolder.class, messages,
 					new MessageViewHolder.OnMessageClickListener() {
 						@Override
@@ -592,8 +607,30 @@ public class MessageActivity extends Activity implements ChannelListener{
 		if (!input.equals("")) {
 			
 			final Messages messagesObject = this.channel.getMessages();
-			final Message message = messagesObject.createMessage(input);
-		
+
+			TwilioApplication application = (TwilioApplication) MessageActivity.this.getApplication();
+			Message message;
+
+			String body = "";
+
+			if(application.getUser().equals("user1")) {
+
+				try {
+					body = Base64Utils.encode(rsaUtil.encryptByPublicKey(input.getBytes("UTF-8"), RSA_PUBLIC_KEY1));
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+
+			}else if(application.getUser().equals("user2")) {
+
+				try {
+					body = Base64Utils.encode(rsaUtil.encryptByPublicKey(input.getBytes("UTF-8"), RSA_PUBLIC_KEY1));
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
+			message = messagesObject.createMessage(body);
+
 			messagesObject.sendMessage(message, new StatusListener() {
     			
 				@Override
@@ -612,15 +649,15 @@ public class MessageActivity extends Activity implements ChannelListener{
             	        }
             	    });
 				}
-      		});	  
-		
+			});
+
 		}
-	
+
 		inputText.requestFocus();
 	}
 
 	@Override
-	public void onMessageAdd(Message message) {	
+	public void onMessageAdd (Message message) {
 		setupListView(this.channel);
 	}
 
@@ -659,9 +696,9 @@ public class MessageActivity extends Activity implements ChannelListener{
 	}
 	
 	@Override
-	public void onMemberDelete(Member member) {
-		if(member != null) {
-			showToast(member.getIdentity() + " deleted");
+	public void onMemberDelete(Member member){
+			if (member != null) {
+				showToast(member.getIdentity() + " deleted");
 		}
 	}
 	

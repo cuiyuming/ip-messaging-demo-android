@@ -6,6 +6,7 @@ public class TwilioApplication extends Application {
 
 	private static TwilioApplication instance;
 	private BasicIPMessagingClient basicClient;
+	private String user;
 
 	public static TwilioApplication get() {
 		return instance;
@@ -20,5 +21,13 @@ public class TwilioApplication extends Application {
 	
 	public BasicIPMessagingClient getBasicClient() {
 		return this.basicClient;
+	}
+
+	public void setUser(String user){
+		this.user = user;
+	}
+
+	public String getUser(){
+		return user;
 	}
 }

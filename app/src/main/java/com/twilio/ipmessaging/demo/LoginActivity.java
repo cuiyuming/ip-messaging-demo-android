@@ -31,9 +31,9 @@ import android.widget.Toast;
 
 public class LoginActivity extends Activity implements LoginListener {
 	private static final Logger logger = Logger.getLogger(LoginActivity.class);
-	private static final String AUTH_PHP_SCRIPT = "https://999d77f4.ngrok.io/ipmToken";
+	private static final String AUTH_PHP_SCRIPT = "http://42741e68.ngrok.io/ipmToken";
 		
-	private static final String DEFAULT_CLIENT_NAME = "TestUser";
+	private static final String DEFAULT_CLIENT_NAME = "user";
 	private ProgressDialog progressDialog;
 	private Button login;
 	private Button logout;
@@ -44,7 +44,7 @@ public class LoginActivity extends Activity implements LoginListener {
 	private BasicIPMessagingClient chatClient;
 	private String endpoint_id = "";
 	public static String local_author = DEFAULT_CLIENT_NAME;
-    private String PROJECT_NUMBER = "1234567891234";
+    private String PROJECT_NUMBER = "1015096783942";
     private EditText etRegId;
 	
 	@Override
@@ -63,17 +63,20 @@ public class LoginActivity extends Activity implements LoginListener {
 			@Override
 			public void onClick(View v) {
 				String idChosen = clientNameTextBox.getText().toString();
-				String endpointIdFull = idChosen + "-" + LoginActivity.this.endpoint_id + "-android-"+ getApplication().getPackageName();
+				String device_name = "android";
 
 				StringBuilder url = new StringBuilder();
 				url.append(AUTH_PHP_SCRIPT);
-//				url.append("&identity=");
-//				url.append(URLEncoder.encode(idChosen));
-//				url.append("&endpointId=" + URLEncoder.encode(endpointIdFull));
+				url.append("?identity=");
+				url.append(URLEncoder.encode(idChosen));
+				url.append("&device_id=" + URLEncoder.encode(device_name));
 //				url.append(clientNameTextBox.getText().toString());
 //				url.append("&endpoint_id=" + LoginActivity.this.endpoint_id);
 //				logger.e("url string : " + url.toString());
 				new GetCapabilityTokenAsyncTask().execute(url.toString());
+				TwilioApplication application = (TwilioApplication) LoginActivity.this.getApplication();
+				application.setUser(idChosen);
+
 			}
 		});
 
