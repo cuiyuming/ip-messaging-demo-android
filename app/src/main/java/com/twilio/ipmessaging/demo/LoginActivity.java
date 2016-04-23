@@ -31,9 +31,11 @@ import android.widget.Toast;
 
 public class LoginActivity extends Activity implements LoginListener {
 	private static final Logger logger = Logger.getLogger(LoginActivity.class);
-	private static final String AUTH_PHP_SCRIPT = "http://42741e68.ngrok.io/ipmToken";
-		
-	private static final String DEFAULT_CLIENT_NAME = "user";
+	private static final String AUTH_PHP_SCRIPT = "http://884f2ec7.ngrok.io/ipmToken";
+
+	private static final String DEFAULT_CLIENT_NAME = "f096c989-7102-4126-b232-24d178677595";
+	private static final String DEFAULT_CONTACT_NAME = "48ac0082-867a-457f-8828-bf68d4d86719";
+
 	private ProgressDialog progressDialog;
 	private Button login;
 	private Button logout;
@@ -44,9 +46,9 @@ public class LoginActivity extends Activity implements LoginListener {
 	private BasicIPMessagingClient chatClient;
 	private String endpoint_id = "";
 	public static String local_author = DEFAULT_CLIENT_NAME;
-    private String PROJECT_NUMBER = "1015096783942";
+    private String PROJECT_NUMBER = "538672672293";
     private EditText etRegId;
-	
+
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);

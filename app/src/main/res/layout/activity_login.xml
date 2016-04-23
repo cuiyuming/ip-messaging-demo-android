@@ -33,6 +33,7 @@
                 android:layout_width="250dp"
                 android:layout_height="wrap_content"
                 android:hint="@string/client_name"
+                android:text=""
                 android:singleLine="true"
                 android:textColor="@android:color/black" />
         </LinearLayout>

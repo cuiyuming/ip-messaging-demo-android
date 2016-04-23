@@ -7,6 +7,7 @@
 
 package com.twilio.ipmessaging.demo;
 
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -35,6 +36,7 @@ public abstract class HttpHelper
 	public static String httpGet(String url) throws Exception {
 
 		URL urlObj = new URL(url);
+
 		HttpURLConnection conn = (HttpURLConnection) urlObj.openConnection();
 
 		conn.setConnectTimeout(45000);
@@ -44,10 +46,27 @@ public abstract class HttpHelper
 		int responseCode = conn.getResponseCode();
 
 		if (responseCode == HttpURLConnection.HTTP_OK) {
-			InputStream is = conn.getInputStream();
-			String capabilityToken = stringFromInputStream(is);
-			is.close();
-			conn.disconnect();
+//			InputStream is = conn.getInputStream();
+//			String capabilityToken = stringFromInputStream(is);
+//			is.close();
+//			conn.disconnect();
+
+			String capabilityToken = "";
+
+			try {
+				InputStream is = conn.getInputStream();;
+				String UTF8 = "utf8";
+				int BUFFER_SIZE = 8192;
+
+				BufferedReader br = new BufferedReader(new InputStreamReader(is,
+						UTF8), BUFFER_SIZE);
+				String str;
+				while ((str = br.readLine()) != null) {
+					capabilityToken += str;
+				}
+			} catch (Exception e) {
+
+			}
 			return capabilityToken;
 		} else {
 			conn.disconnect();

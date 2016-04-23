@@ -90,7 +90,6 @@ public class RSAUtil {
         int offSet = 0;
         byte[] cache;
         int i = 0;
-        // 对数据分段解密
         while (inputLen - offSet > 0) {
             if (inputLen - offSet > MAX_DECRYPT_BLOCK) {
                 cache = cipher.doFinal(encryptedData, offSet, MAX_DECRYPT_BLOCK);
@@ -144,7 +143,6 @@ public class RSAUtil {
         X509EncodedKeySpec x509KeySpec = new X509EncodedKeySpec(keyBytes);
         KeyFactory keyFactory = KeyFactory.getInstance(KEY_ALGORITHM);
         Key publicK = keyFactory.generatePublic(x509KeySpec);
-        // 对数据加密
 //        Cipher cipher = Cipher.getInstance(keyFactory.getAlgorithm());
         Cipher cipher = Cipher.getInstance("RSA");
         cipher.init(Cipher.ENCRYPT_MODE, publicK);
